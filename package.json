@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "colors": "^1.4.0",
+    "nodemon": "^2.0.7"
+  },
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "name": "back-mp3-server",
+  "version": "1.0.0",
+  "main": "server.js",
+  "devDependencies": {},
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
