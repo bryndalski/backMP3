@@ -28,6 +28,7 @@ const server = http.createServer(function (req, res) {
         case "POST":
             switch (req.url) {
                 case "/getMusic":
+                    console.log("hi");
                     serverMenager.postHadler(req).then(svrResponse => {
                         // let folderek = v.path
                         fileReader("/music/tracks/", __dirname).then((v) => {

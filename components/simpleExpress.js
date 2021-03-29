@@ -18,6 +18,7 @@ const contentType = {
     mpeg: "audio/mpeg",
     mp3: "audio / mpeg3",
     ico: "image/ico",
+    svg: "image/svg+xml"
 }
 
 
@@ -67,5 +68,15 @@ module.exports = {
             ...this.universalHeader
         });
         res.end(JSON.stringify(data));
+    },
+    postHadler(req) {
+        let data = new Promise((sucess, err) => {
+            let allData = "";
+            req.on("data", (data) => allData += data)
+            req.on("end", () => {
+                sucess(JSON.parse(allData))
+            })
+        })
+        return data
     }
 }
