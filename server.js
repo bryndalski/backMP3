@@ -8,7 +8,6 @@ const fileReader = require("./components/fileReader");
 const dbMenager = require("./components/dbMenager");
 const PORT = process.env.PORT || 5500;
 const server = http.createServer(function (req, res) {
-  console.log(req.method);
   switch (req.method) {
     case "GET":
       console.log(req.url);
@@ -20,6 +19,13 @@ const server = http.createServer(function (req, res) {
           break;
         }
         case "/getPlayList": {
+          dbMenager.readDB().then((v) => {
+            if (v == null || v.songs.length == 0)
+              serverMenager.sendJSON(res, {
+                status: "error",
+              });
+            else serverMenager.sendJSON(res, v.songs);
+          });
           break;
         }
         default:
@@ -40,9 +46,7 @@ const server = http.createServer(function (req, res) {
               let resp = [];
               v.forEach((element) => {
                 if (element.path == svrResponse.path) resp.push(element);
-                console.log(element);
               });
-              console.log(resp);
               if (resp.length != 0) serverMenager.sendJSON(res, resp);
               else
                 serverMenager.sendJSON(res, {
@@ -52,14 +56,29 @@ const server = http.createServer(function (req, res) {
             });
           });
           break;
-        case "/saveDb": {
+        case "/addToPlayList": {
           serverMenager.postHadler(req).then((svrResponse) => {
-            console.log(svrResponse);
-            dbMenager.saveInDb();
+            dbMenager.saveInDb(svrResponse).then((v) => {
+              serverMenager.sendJSON(res, {
+                status: "sucess",
+                message: `do playlisty dodano utwór ${svrResponse.name}`,
+              });
+            });
           });
-
           break;
         }
+        case "/removeFromPlayList": {
+          serverMenager.postHadler(req).then((svrResponse) => {
+            dbMenager.removeInDb(svrResponse).then((v) => {
+              serverMenager.sendJSON(res, {
+                status: "sucess",
+                message: `z playlisty usunięto ${svrResponse.name}`,
+              });
+            });
+          });
+          break;
+        }
+
         default:
           break;
       }

@@ -34,7 +34,7 @@ module.exports = {
   },
   fileSend: (res, filePath, Ctype) => {
     let sciezka = filePath;
-    sciezka = filePath.replace(/%20/g, " ");
+    sciezka = decodeURI(filePath);
     fs.readFile(sciezka, function (error, data) {
       if (error) {
         res.writeHead(404, {
@@ -60,7 +60,6 @@ module.exports = {
     });
   },
   sendJSON(res, data) {
-    console.log(data);
     res.writeHead(200, {
       "Content-Type": contentType.json,
       Accept: "application/xhtml+xml",
