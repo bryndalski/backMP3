@@ -6,12 +6,16 @@ const path = require("path");
 const qs = require("querystring");
 const fileReader = require("./components/fileReader");
 const dbMenager = require("./components/dbMenager");
-const PORT = process.env.PORT || 5500;
+const formidable = require("formidable");
+const PORT = process.env.PORT || 3000;
 const server = http.createServer(function (req, res) {
   switch (req.method) {
     case "GET":
-      console.log(req.url);
       switch (req.url) {
+        case "/admin": {
+          serverMenager.fileSend(res, "admin/admin.html");
+          break;
+        }
         case "/getCovers": {
           fileReader("/music/covers/", __dirname).then((v) =>
             serverMenager.sendJSON(res, v)
@@ -28,6 +32,17 @@ const server = http.createServer(function (req, res) {
           });
           break;
         }
+        case "/server.js":
+        case "/components/dbMenager.js":
+        case "/components/fileReader.js":
+        case "/components/simpleExpress.js":
+        case "/database/playlista.db":
+          res.writeHead(404, {
+            "Content-Type": "text/html",
+          });
+          res.write("<h1>błąd 404 - nie ma pliku!<h1>");
+          res.end();
+          break;
         default:
           serverMenager.fileSend(
             res,
@@ -36,6 +51,7 @@ const server = http.createServer(function (req, res) {
           );
           break;
       }
+
       break;
     case "POST":
       console.log(req.url);
@@ -78,7 +94,79 @@ const server = http.createServer(function (req, res) {
           });
           break;
         }
+        case "/upload": {
+          let form = formidable({});
+          form.keepExtensions = true;
+          form.keepFilenames = true;
+          form.multiples = true;
+          let checkForCOver = true;
+          let folderName = new Date().getTime().toString();
+          console.log(folderName);
+          form.on("fileBegin", function (name, file) {
+            switch (file.type) {
+              case "image/jpeg":
+              case "image/png":
+              case "image/jpg":
+                checkForCOver = false;
 
+                if (
+                  !fs.existsSync(
+                    path.join(__dirname, "music", "covers", folderName)
+                  )
+                ) {
+                  fs.mkdirSync(
+                    path.join(__dirname, "/music/covers/", folderName)
+                  );
+                }
+                file.path = path.join(
+                  __dirname,
+                  "/music/covers/",
+                  folderName,
+                  file.name
+                );
+                break;
+              default:
+                if (
+                  !fs.existsSync(
+                    path.join(__dirname + "/music/tracks/", folderName)
+                  )
+                ) {
+                  fs.mkdirSync(
+                    path.join(__dirname + "/music/tracks/", folderName)
+                  );
+                }
+                file.path = path.join(
+                  __dirname + "/music/tracks/",
+                  folderName,
+                  file.name
+                );
+                break;
+            }
+          });
+          form.parse(req, function (err, fields, files) {});
+          form.on("end", () => {
+            console.log("zakończono upload");
+            if (checkForCOver) {
+              if (
+                !fs.existsSync(
+                  path.join(__dirname, "music", "covers", folderName)
+                )
+              ) {
+                fs.mkdirSync(
+                  path.join(__dirname, "/music/covers/", folderName)
+                );
+              }
+              let inStr = fs.createReadStream(
+                path.join(__dirname, "/music", "cover.jpg")
+              );
+              let outStr = fs.createWriteStream(
+                path.join(__dirname, "music", "covers", folderName, "cover.jpg")
+              );
+              inStr.pipe(outStr);
+            }
+          });
+          break;
+        }
         default:
           break;
       }
@@ -92,5 +180,5 @@ const server = http.createServer(function (req, res) {
 });
 
 server.listen(PORT, function () {
-  console.log("serwer startuje na porcie 5500".rainbow);
+  console.log(`serwer startuje na porcie ${PORT}`.rainbow);
 });
