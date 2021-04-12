@@ -24,6 +24,7 @@ window.addEventListener("DOMContentLoaded", () => {
     let containsCover = false;
     dropArea.innerText = "Pliki dodano";
     dropList.innerText = "";
+    let allowTosend = false;
 
     let formData = new FormData(); // to wyśle
     formData.append("input", e.dataTransfer.files);
@@ -32,6 +33,7 @@ window.addEventListener("DOMContentLoaded", () => {
         case "mp3":
           validator(element.name, "/admin/img/song.svg");
           formData.append(element.name, e.dataTransfer.files[counter]);
+          allowTosend = true;
           break;
         case "jpg":
         case "jpeg":
@@ -40,6 +42,7 @@ window.addEventListener("DOMContentLoaded", () => {
             validator(element.name, "/admin/img/cover.svg");
             formData.append("cover", e.dataTransfer.files[counter]);
             containsCover = true;
+            allowTosend = true;
           } else {
             validator(
               "Znaleziono więcej niż 1 obraz, może występować tylko 1 okładka",
@@ -57,15 +60,15 @@ window.addEventListener("DOMContentLoaded", () => {
           break;
       }
     });
-    console.log(formData);
-    fetch("/upload", {
-      headers: {
-        Accept: "application/json",
-        "X-Requested-With": "XMLHttpRequest",
-      },
-      method: "POST",
-      body: formData,
-    }).then();
+    if (allowTosend)
+      fetch("/upload", {
+        headers: {
+          Accept: "application/json",
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        method: "POST",
+        body: formData,
+      }).then();
   });
 });
 
